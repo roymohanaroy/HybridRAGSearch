@@ -11,7 +11,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Dict
 from typing import Any
-
+from sentence_transformers import CrossEncoder
 from HybridRetriever import HybridRetriever
 
 import os
@@ -36,6 +36,9 @@ class EnhancedRAG:
     def setup(self):
         """Setup production RAG - complex but actually works."""
         print("🟢 Building Enhanced RAG (the one that works)...")
+        # Step 6: Cross-Encoder for re-ranking
+        self.cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")  # fast & effective
+        print("   Cross-Encoder ready for semantic re-ranking")
         
         # Step 1: Load PDF (same as before)
         loader = PyPDFLoader(self.pdf_path)
@@ -120,26 +123,22 @@ Detailed Answer:"""
         print("   ✅ Ready to actually help users\n")
     
     def rerank_documents(self, query: str, documents: List, top_k: int = 4):
-        """
-        Rerank retrieved docs by relevance.
-        Simple version - in production, use Cohere or similar.
-        """
-        query_terms = set(query.lower().split())
-        
-        scored_docs = []
-        for doc in documents:
-            content_lower = doc.page_content.lower()
-            
-            # Score by query term frequency
-            score = sum(
-                content_lower.count(term) 
-                for term in query_terms
-            )
-            scored_docs.append((score, doc))
-        
-        # Sort and return best matches
-        scored_docs.sort(reverse=True, key=lambda x: x[0])
-        return [doc for _, doc in scored_docs[:top_k]]
+            """
+            Rerank retrieved documents using a Cross-Encoder for semantic relevance.
+            """
+            if not documents:
+                return []
+
+            # Prepare pairs for cross-encoder
+            pairs = [(query, doc.page_content) for doc in documents]
+
+            # Get semantic relevance scores
+            scores = self.cross_encoder.predict(pairs)
+
+            # Sort documents by score descending
+            ranked_docs = [doc for _, doc in sorted(zip(scores, documents), key=lambda x: x[0], reverse=True)]
+
+            return ranked_docs[:top_k]
     
     def query(self, question: str) -> Dict[str, Any]:
         """Query with automatic reranking - much better results."""
