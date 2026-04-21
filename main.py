@@ -1,7 +1,7 @@
 from EnhancedRAGSearch import EnhancedRAG
 from NaiveRAG import BasicRAG
 from NaiveRAG import BasicRAG
-
+from fastapi import FastAPI
 
 def compare_systems(basic_rag, enhanced_rag, questions):
     """Run both systems and compare results."""

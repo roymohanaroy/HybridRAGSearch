@@ -1,0 +1,169 @@
+(base) PS C:\Users\mohan\AgenticAI\HybridRAGSearch> python main.py         
+✅ Custom Hybrid Retriever defined
+✅ Enhanced RAG class defined
+✅ Basic RAG class defined
+✅ Comparison function defined
+file path-------------*********************************------------------------ docs/1706.03762.pdf
+🔵 Building Basic RAG (the problematic one)...
+   Loaded 15 pages from PDF
+   Split into 48 chunks (watch them break later...)
+C:\Users\mohan\AgenticAI\HybridRAGSearch\NaiveRAG.py:54: LangChainDeprecationWarning: The class `OpenAIEmbeddings` was deprecated in LangChain 0.0.9 and will be removed in 1.0. An updated version of the class exists in the `langchain-openai package and should be used instead. To use it run `pip install -U `langchain-openai` and import as `from `langchain_openai import OpenAIEmbeddings``.
+  embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+   Stored embeddings in ChromaDB
+C:\Users\mohan\AgenticAI\HybridRAGSearch\NaiveRAG.py:65: LangChainDeprecationWarning: The class `ChatOpenAI` was deprecated in LangChain 0.0.10 and will be removed in 1.0. An updated version of the class exists in the `langchain-openai package and should be used instead. To use it run `pip install -U `langchain-openai` and import as `from `langchain_openai import ChatOpenAI``.
+  llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+   QA chain ready
+   ⚠️  Warning: This WILL disappoint you
+
+🟢 Building Enhanced RAG (the one that works)...
+Loading weights: 100%|█████████████████████████████████████████████████████████████████████████████████████████████████████| 105/105 [00:00<00:00, 2081.88it/s]
+BertForSequenceClassification LOAD REPORT from: cross-encoder/ms-marco-MiniLM-L-6-v2
+Key                          | Status     |  | 
+-----------------------------+------------+--+-
+bert.embeddings.position_ids | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:   can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+   Cross-Encoder ready for semantic re-ranking
+   Loaded 15 pages
+   Created 71 overlapping chunks
+   Built hybrid retriever (Keyword + Semantic)
+   QA chain built with enhanced prompt
+   ✅ Ready to actually help users
+
+
+====================================================================================================
+                              🔵 BASIC  vs  🟢 ENHANCED
+====================================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+Question 1: How does multi-head attention work in the Transformer?
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+🔵 BASIC RAG:
+Multi-head attention in the Transformer works by allowing the model to jointly attend to information from different representation subspaces at various positions. It does this through the use of multiple attention heads, each of which processes the input data in parallel. The formula for multi-head attention is given by:
+
+\[ \text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h) W_O \]
+
+where each head is computed as:
+
+\[ \text{head}_i = \text{Attention}(Q W_Q^i, K W_K^i, V W_V^i) \]
+
+In this setup:
+- \( Q, K, V \) are the query, key, and value matrices, respectively.
+- \( W_Q^i, W_K^i, W_V^i \) are parameter matrices that project the input into different subspaces for each head.
+- \( W_O \) is a parameter matrix that projects the concatenated outputs of all heads back to the original dimensionality.
+
+In the specific implementation described, the Transformer uses \( h = 8 \) parallel attention heads, with each head having dimensions \( d_k = d_v = d_{model}/h = 64 \). This design allows the model to capture diverse aspects of the input data while maintaining a computational cost similar to that of single-head attention with full dimensionality. 
+
+Multi-head attention is utilized in various ways within the Transformer architecture, including in "encoder-decoder attention" layers, where the queries originate from the previous decoder layer. This mechanism enhances the model's ability to focus on different parts of the input sequence simultaneously, improving its performance on tasks such as translation and text generation.
+
+   └─ Used 4 chunks
+
+🟢 ENHANCED RAG:
+Multi-head attention in the Transformer model operates by allowing the model to focus on different parts of the input sequence simultaneously, enhancing its ability to capture various relationships and dependencies. Here’s how it works in detail:
+
+1. **Multi-Head Mechanism**: The Transformer employs multiple attention heads, each with its own set of learned linear transformations. For each head, the input is transformed into three different vectors: queries (Q), keys (K), and values (V). The dimensionality of each head is defined as \( d_k = d_v = \frac{d_{model}}{h} \), where \( d_{model} \) is the total dimensionality of the model and \( h \) is the number of heads. In this context, \( d_{model} = 512 \) and \( h = 8 \), leading to \( d_k = d_v = 64 \).
+
+2. **Scaled Dot-Product Attention**: Each attention head computes attention scores using the scaled dot-product attention mechanism. The attention score for a given query \( Q \) and key \( K \) is calculated as:
+   \[
+   \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+   \]
+   Here, \( QK^T \) computes the dot products of the query with all keys, and the result is scaled by \( \sqrt{d_k} \) to prevent excessively large values that could lead to saturation in the softmax function.
+
+3. **Concatenation of Heads**: After computing the attention outputs for each head, the results are concatenated. This allows the model to aggregate information from different representation subspaces at different positions.
+
+4. **Final Linear Transformation**: The concatenated output from all heads is then passed through a final linear transformation to produce the output of the multi-head attention layer. This output has the same dimensionality as the input, \( d_{model} \).
+
+5. **Applications in the Transformer**: Multi-head attention is utilized in two main ways within the Transformer:
+   - **Encoder-Decoder Attention**: In this layer, the queries come from the previous decoder layer, while the keys and values come from the encoder's output. This setup allows the decoder to attend to all positions in the input sequence.
+   - **Self-Attention in Encoder**: In the encoder, self-attention layers allow each position in the input sequence to attend to all other positions, enabling the model to capture dependencies regardless of their distance.
+
+Overall, the multi-head attention mechanism enhances the model's ability to learn complex relationships in the data, making it a powerful component of the Transformer architecture.
+
+   └─ Retrieved 6, 
+      used 4 after reranking
+
+📊 Quick Stats:
+   Basic: 241 words
+   Enhanced: 388 words
+   → Enhanced gave more detailed answer ✅
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+Question 2: What is the time complexity of self-attention?
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+🔵 BASIC RAG:
+The context provided does not explicitly state the time complexity of self-attention. However, it is generally known that the time complexity of self-attention mechanisms, such as those used in the Transformer model, is O(n^2 * d), where n is the length of the input sequence and d is the dimensionality of the representations. This complexity arises because each element in the sequence attends to every other element, resulting in a quadratic relationship with respect to the sequence length.
+
+   └─ Used 4 chunks
+
+🟢 ENHANCED RAG:
+The time complexity of self-attention is \( O(n^2 \cdot d) \), where \( n \) is the sequence length and \( d \) is the representation dimension. This complexity arises because self-attention computes interactions between all pairs of positions in the input sequence, leading to a quadratic relationship with respect to the sequence length.
+
+   └─ Retrieved 7, 
+      used 4 after reranking
+
+📊 Quick Stats:
+   Basic: 78 words
+   Enhanced: 54 words
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+Question 3: Why is the Transformer better than RNNs for long sequences?
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+🔵 BASIC RAG:
+The Transformer is better than RNNs for long sequences primarily because it relies entirely on an attention mechanism, which allows it to model dependencies between input and output without regard to their distance in the sequences. This capability enables the Transformer to capture long-range dependencies more effectively than RNNs, which process sequences sequentially and can struggle with long-term dependencies due to issues like vanishing gradients.
+
+Additionally, the Transformer's architecture allows for significantly more parallelization during training, leading to improved computational efficiency. This means that the Transformer can be trained much faster than RNNs, achieving state-of-the-art translation quality in a shorter time frame. Overall, the combination of attention mechanisms and parallel processing makes the Transformer particularly well-suited for handling long sequences.
+
+   └─ Used 4 chunks
+
+🟢 ENHANCED RAG:
+The Transformer model is considered better than RNNs for long sequences primarily due to its reliance on self-attention mechanisms, which offer several advantages over the recurrent layers used in RNNs. Here are the key reasons:
+
+1. **Parallelization**: The self-attention mechanism allows for parallel computation of input sequences, as it does not require sequential processing like RNNs. In RNNs, each step depends on the previous one, which limits the ability to leverage modern hardware for faster training. In contrast, the Transformer processes all tokens in the input sequence simultaneously, significantly speeding up training times.
+
+2. **Long-Range Dependencies**: Self-attention can directly connect any two positions in the input sequence, regardless of their distance. This means that the model can effectively capture long-range dependencies without the vanishing gradient problem that often plagues RNNs, especially when dealing with long sequences. RNNs struggle to maintain information over long distances due to their sequential nature and the way they propagate information through time steps.
+
+3. **Computational Complexity**: The computational complexity of self-attention is O(n^2) for a sequence of length n, which is manageable for modern hardware and allows for efficient processing of long sequences. In contrast, RNNs have a complexity of O(n) per time step, but the cumulative effect can lead to inefficiencies when processing long sequences.
+
+4. **Positional Encoding**: The Transformer uses positional encodings to maintain the order of the sequence, allowing it to learn relationships based on the position of tokens. This is crucial for understanding the context in long sequences, where the position can significantly affect meaning.
+
+5. **Training Efficiency**: The Transformer can be trained significantly faster than RNN-based architectures. For example, the Transformer achieves a BLEU score of 28.4 on the WMT 2014 English-to-German translation task and 41.8 on the English-to-French task, with training times of only 3.5 days on eight GPUs. This is a small fraction of the training costs compared to the best RNN models.
+
+Overall, these factors contribute to the Transformer's superior performance on tasks involving long sequences, making it a more effective choice than traditional RNNs.
+
+   └─ Retrieved 8, 
+      used 4 after reranking
+
+📊 Quick Stats:
+   Basic: 120 words
+   Enhanced: 338 words
+   → Enhanced gave more detailed answer ✅
+
+
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+Question 4: How many parameters does the base model have?
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+🔵 BASIC RAG:
+The context provided does not specify the number of parameters in the English-to-German base translation model. Therefore, I cannot provide an answer to the question based on the given information.
+
+   └─ Used 4 chunks
+
+🟢 ENHANCED RAG:
+The base model has 65 million parameters, as indicated in the context provided.
+
+   └─ Retrieved 8, 
+      used 4 after reranking
+
+📊 Quick Stats:
+   Basic: 30 words
+   Enhanced: 13 words
