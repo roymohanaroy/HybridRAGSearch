@@ -2,6 +2,14 @@ import streamlit as st
 from EnhancedRAGSearch import EnhancedRAG
 from NaiveRAG import BasicRAG
 
+
+st.set_page_config(
+    page_title="Hybrid RAG",
+    layout="wide"
+)
+
+st.title("App is alive ✅")
+
 # -------------------------------
 # PAGE CONFIG
 # -------------------------------
