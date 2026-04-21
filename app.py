@@ -1,77 +1,65 @@
 import streamlit as st
-from EnhancedRAGSearch import EnhancedRAG
-from NaiveRAG import BasicRAG
-
-
-st.set_page_config(
-    page_title="Hybrid RAG",
-    layout="wide"
-)
-
-st.title("App is alive ✅")
+import requests
 
 # -------------------------------
-# PAGE CONFIG
+# CONFIG
 # -------------------------------
 st.set_page_config(
     page_title="Hybrid RAG Comparator",
     layout="wide"
 )
 
-st.title("🔍 RAG Comparison: Basic vs Enhanced")
+API_URL = "http://localhost:8000/compare"  # change this
 
 # -------------------------------
-# LOAD SYSTEMS (CACHE)
+# TITLE
 # -------------------------------
-@st.cache_resource
-def load_models():
-    basic = BasicRAG("docs/1706.03762.pdf")
-    basic.setup()
-
-    enhanced = EnhancedRAG("docs/1706.03762.pdf")
-    enhanced.setup()
-
-    return basic, enhanced
-
-basic_rag, enhanced_rag = load_models()
-
-# -------------------------------
-# SIDEBAR
-# -------------------------------
-st.sidebar.header("⚙️ Settings")
-
-example_questions = [
-    "How does multi-head attention work in the Transformer?",
-    "What is the time complexity of self-attention?",
-    "Why is the Transformer better than RNNs for long sequences?",
-    "How many parameters does the base model have?"
-]
-
-selected_question = st.sidebar.selectbox(
-    "Try an example:",
-    [""] + example_questions
-)
+st.title("🔍 Hybrid RAG System Comparator")
+st.markdown("Compare **Basic RAG vs Enhanced RAG** in real-time")
 
 # -------------------------------
 # INPUT
 # -------------------------------
-query = st.text_input(
-    "💬 Enter your question:",
-    value=selected_question
-)
+query = st.text_input("💬 Enter your question")
+
+# Example prompts
+examples = [
+    "How does multi-head attention work?",
+    "What is self-attention complexity?",
+    "Why is Transformer better than RNNs?",
+    "How many parameters does the base model have?"
+]
+
+st.sidebar.header("💡 Example Questions")
+for ex in examples:
+    if st.sidebar.button(ex):
+        query = ex
 
 # -------------------------------
-# RUN QUERY
+# CALL BACKEND
 # -------------------------------
-if st.button("🔎 Compare") and query:
-    with st.spinner("Running both RAG systems..."):
+if st.button("🚀 Compare") and query:
 
-        basic_result = basic_rag.query(query)
-        enhanced_result = enhanced_rag.query(query)
+    with st.spinner("Running RAG systems..."):
+
+        try:
+            response = requests.post(
+                API_URL,
+                json={"query": query},
+                timeout=60
+            )
+
+            data = response.json()
+
+        except Exception as e:
+            st.error(f"Backend error: {e}")
+            st.stop()
 
     # -------------------------------
-    # LAYOUT: SIDE BY SIDE
+    # RESULTS UI
     # -------------------------------
+    st.divider()
+
     col1, col2 = st.columns(2)
 
     # -------------------------------
@@ -80,11 +68,11 @@ if st.button("🔎 Compare") and query:
     with col1:
         st.subheader("🔵 Basic RAG")
 
-        st.write(basic_result["answer"])
+        st.write(data["basic"]["answer"])
 
-        st.markdown("**Stats:**")
-        st.write(f"- Chunks used: {basic_result['num_sources']}")
-        st.write(f"- Answer length: {len(basic_result['answer'].split())} words")
+        st.markdown("### 📊 Stats")
+        st.metric("Chunks Used", data["basic"]["num_sources"])
+        st.metric("Word Count", data["basic"]["word_count"])
 
     # -------------------------------
     # ENHANCED RAG
@@ -92,25 +80,31 @@ if st.button("🔎 Compare") and query:
     with col2:
         st.subheader("🟢 Enhanced RAG")
 
-        st.write(enhanced_result["answer"])
+        st.write(data["enhanced"]["answer"])
 
-        st.markdown("**Stats:**")
-        st.write(f"- Retrieved: {enhanced_result['total_retrieved']}")
-        st.write(f"- After reranking: {enhanced_result['after_reranking']}")
-        st.write(f"- Answer length: {len(enhanced_result['answer'].split())} words")
+        st.markdown("### 📊 Stats")
+        st.metric("Retrieved Docs", data["enhanced"]["retrieved"])
+        st.metric("After Rerank", data["enhanced"]["reranked"])
+        st.metric("Word Count", data["enhanced"]["word_count"])
 
     # -------------------------------
-    # COMPARISON INSIGHT
+    # INSIGHT PANEL
     # -------------------------------
     st.divider()
-    st.subheader("📊 Comparison Insight")
+    st.subheader("📈 Comparison Insight")
 
-    basic_len = len(basic_result["answer"].split())
-    enhanced_len = len(enhanced_result["answer"].split())
+    basic_len = data["basic"]["word_count"]
+    enhanced_len = data["enhanced"]["word_count"]
 
     if enhanced_len > basic_len * 1.3:
-        st.success("✅ Enhanced RAG produced a more detailed answer")
+        st.success("✅ Enhanced RAG provides more detailed answers")
     elif enhanced_len < basic_len:
-        st.warning("⚠️ Basic RAG was more concise")
+        st.warning("⚠️ Basic RAG is more concise")
     else:
-        st.info("ℹ️ Both answers are similar in length")
+        st.info("ℹ️ Both systems are similar in verbosity")
+
+    # -------------------------------
+    # RAW JSON (debug mode)
+    # -------------------------------
+    with st.expander("🔍 Raw Response"):
+        st.json(data)
