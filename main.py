@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from EnhancedRAGSearch import EnhancedRAG
 from NaiveRAG import BasicRAG
 
+
+
 app = FastAPI()
 
 # ✅ Load models ONCE at startup

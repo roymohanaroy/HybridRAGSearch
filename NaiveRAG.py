@@ -10,11 +10,13 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_text_splitters import CharacterTextSplitter
 from typing import Dict
 from typing import Any
+from langsmith import traceable
 
 import os
 from dotenv import load_dotenv
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 
 class BasicRAG:
     """
@@ -85,10 +87,12 @@ class BasicRAG:
         
         print("   QA chain ready")
         print("   ⚠️  Warning: This WILL disappoint you\n")
-        
+    
+    @traceable   
     def query(self, question: str) -> Dict[str, Any]:
         """Ask a question, get a questionable answer."""
         # Get the answer
+       
         answer = self.chain.invoke(question)
         
         # Also get source docs for comparison
