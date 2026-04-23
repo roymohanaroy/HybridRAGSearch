@@ -51,8 +51,8 @@ class EnhancedRAG:
         # Step 2: Smart chunking with context preservation
         # This was THE game changer
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=800,           # Smaller = more precise retrieval
-            chunk_overlap=200,        # ✅ CRUCIAL: Preserves context!
+            chunk_size=500,           # Smaller = more precise retrieval
+            chunk_overlap=100,        # ✅ CRUCIAL: Preserves context!
             separators=["\n\n", "\n", ". ", " ", ""],  # Respects structure
             length_function=len,
         )

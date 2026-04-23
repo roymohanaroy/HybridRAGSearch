@@ -45,8 +45,8 @@ class BasicRAG:
         # Problem: No overlap = lost context at boundaries
         # Problem: Fixed 1000 chars = cuts sentences randomly
         text_splitter = CharacterTextSplitter(
-            chunk_size=1000,
-            chunk_overlap=0,      # ❌ BIG MISTAKE #1: No context preservation
+            chunk_size=500,
+            chunk_overlap=50,      # ❌ BIG MISTAKE #1: No context preservation
             separator="\n"
         )
         chunks = text_splitter.split_documents(documents)

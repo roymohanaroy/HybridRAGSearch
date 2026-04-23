@@ -10,10 +10,10 @@ app = FastAPI()
 
 # ✅ Load models ONCE at startup
 basic_rag = BasicRAG("docs/1706.03762.pdf")
-basic_rag.setup()
+
 
 enhanced_rag = EnhancedRAG("docs/1706.03762.pdf")
-enhanced_rag.setup()
+
 
 
 # ✅ Request schema
@@ -25,8 +25,11 @@ class QueryRequest(BaseModel):
 @app.post("/compare")
 def compare(req: QueryRequest):
     question = req.query
-
+    
+    basic_rag.setup()
     basic_result = basic_rag.query(question)
+    
+    enhanced_rag.setup()
     enhanced_result = enhanced_rag.query(question)
 
     return {
