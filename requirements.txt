@@ -4,5 +4,4 @@ chromadb
 rank_bm25
 langchain-core
 fastapi
-streamlit
 pypdf
