@@ -7,3 +7,5 @@ fastapi
 streamlit
 pypdf
 sentence_transformers
+fastapi
+uvicorn
