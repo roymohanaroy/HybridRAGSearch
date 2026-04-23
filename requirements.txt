@@ -1,11 +1,7 @@
-langchain-community
+fastapi
+uvicorn[standard]
 langchain
-chromadb
-rank_bm25
-langchain-core
-fastapi
-streamlit
+langchain-community
 pypdf
-sentence_transformers
-fastapi
-uvicorn
+rank_bm25
+chromadb
