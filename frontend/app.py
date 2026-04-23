@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-API_URL = "http://localhost:8000/compare"  # change this
+API_URL = "http://127.0.0.1:8000/compare"  # change this
 
 # -------------------------------
 # TITLE

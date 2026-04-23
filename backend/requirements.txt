@@ -1,9 +1,9 @@
 langchain-community
 langchain
 chromadb
-sentence-transformers
 rank_bm25
 langchain-core
 fastapi
 streamlit
 pypdf
+sentence_transformers

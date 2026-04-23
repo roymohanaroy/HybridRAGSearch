@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from EnhancedRAGSearch import EnhancedRAG
-from NaiveRAG import BasicRAG
+from backend.EnhancedRAGSearch import EnhancedRAG
+from backend.NaiveRAG import BasicRAG
 
 
 

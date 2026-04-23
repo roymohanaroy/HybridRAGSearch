@@ -12,7 +12,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from typing import Dict
 from typing import Any
 from sentence_transformers import CrossEncoder
-from HybridRetriever import HybridRetriever
+from backend.HybridRetriever import HybridRetriever
 
 import os
 from dotenv import load_dotenv
