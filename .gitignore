@@ -1,7 +1,5 @@
 venv/
 .env
 __pycache__/
-basic_db/
-enhanced_db/
 *.pyc
 *.sqlite3
